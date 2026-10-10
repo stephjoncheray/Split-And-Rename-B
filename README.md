@@ -48,3 +48,13 @@ Le moteur `src/bourses.py`, son interface Tkinter et les fichiers Python sont co
 - Pas de détection fiable garantie pour toutes les éditions de notifications.
 - Les dépendances JS sont actuellement chargées sur CDN ; l'usage strictement intranet demandera un hébergement local.
 - Aucun connecteur de messagerie n'est actif.
+
+## Préparation de campagne pour le serveur interne
+
+Après découpage et contrôle des notifications, ouvrir **03 · Import PRONOTE** et importer un CSV ou XLSX avec les colonnes `NOM, PRENOM, CLASSE, R1_NOM, R1_PRENOM, R1_EMAIL, R2_NOM, R2_PRENOM, R2_EMAIL`.
+
+L'application cherche une correspondance **exacte normalisée** sur le nom et prénom de l'élève, sa classe si renseignée dans PRONOTE, **puis sur le nom et prénom du parent désigné sur la notification**. Un parent absent, une ambiguïté, une classe incohérente ou un courriel invalide bloque automatiquement la préparation pour cette notification. Vérifier les correspondances manuellement : l'identité d'un représentant dans un PDF ne garantit pas à elle seule son droit à recevoir un document sensible.
+
+Dans **04 · Préparer les envois**, contrôler les destinataires, sélectionner les lignes prêtes et ajuster l'objet et le corps avec `{parent}`, `{eleve}`, `{classe}`, `{decision}`. L'export ZIP contient `campagne.json` et les fichiers dans `pieces_jointes/`. Le manifeste utilise le statut `PREPARE_NON_ENVOYE` : **aucun courriel n'est envoyé par cette page**.
+
+Le serveur d'envoi interne de Split-Eval n'est pas automatiquement compatible avec ce schéma. Un **adaptateur spécifique et des contrôles côté serveur** seront nécessaires avant de pouvoir utiliser ce ZIP pour une campagne réelle. Le serveur doit notamment rejeter les chemins de pièces jointes dangereux, vérifier les adresses et exiger une validation explicite de l'opérateur. Les dépendances JavaScript actuellement chargées par CDN sont à héberger localement pour un usage maîtrisé en établissement.
