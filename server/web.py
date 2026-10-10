@@ -176,8 +176,11 @@ class Handler(BaseHTTPRequestHandler):
             return self.output(404,{"error":"Route inconnue"})
         # Same-origin : le navigateur depuis GitHub Pages n'a pas accès à cette API par CORS.
         origin=self.headers.get("Origin")
-        host=self.headers.get("Host","")
-        if origin and urlparse(origin).netloc!=host:
+        # Le reverse proxy peut transmettre Host: 127.0.0.1:8766.
+        # Ne pas comparer Origin au Host interne : utiliser l'origine publique
+        # connue et explicitement autorisée sur le réseau de l'établissement.
+        allowed_origins = {"http://192.168.224.240", "https://192.168.224.240"}
+        if origin and origin.rstrip("/") not in allowed_origins:
             return self.output(403,{"error":"Origine non autorisée"})
         if self.headers.get("Content-Type","").split(";")[0].strip()!="application/json":
             return self.output(415,{"error":"JSON requis"})
