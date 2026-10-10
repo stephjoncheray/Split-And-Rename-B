@@ -1,61 +1,50 @@
-# Split-And-Rename-B
+# Split-And-Rename-B — version web
 
-Outil local de séparation et de renommage des notifications de bourses PDF, avec interface graphique **Tkinter** et mode ligne de commande.
+**[Ouvrir l'application web](https://stephjoncheray.github.io/Split-And-Rename-B/)** *(après activation de GitHub Pages)*
 
-> Réécriture maintenable basée sur l'analyse statique d'un ancien exécutable Windows. Le code source original n'a pas été récupéré.
+Application web statique qui sépare des notifications de bourse contenues dans des PDF multi-pages, extrait les informations de la notification, puis produit un ZIP renommé avec les dossiers `Acceptation/` et `Refus/`.
 
-## Fonctionnalités
+## Confidentialité et architecture
 
-- Parcourt les PDF présents dans un dossier.
-- Traite les notifications par **blocs de deux pages**.
-- Recherche représentant légal, élève, classe et décision dans le texte extrait de la première page.
-- Crée deux sous-dossiers : `export/Acceptation/` et `export/Refus/`.
-- Renomme les documents selon le modèle `NOMREP_Prenomrep_NOMELEVE_Prenomeleve_CLASSE_Notification_Acceptation.pdf` (ou `Refus`).
-- Ajoute un suffixe numérique en cas de doublon et journalise les erreurs.
-- Ne transmet aucun PDF à un service externe.
+- Traitement des documents **dans le navigateur**, sans téléversement de PDF ni compte serveur.
+- Les fichiers sources et le ZIP sont conservés localement côté poste. Le ZIP n'est créé qu'au clic de l'utilisateur.
+- L'interface se charge depuis GitHub Pages ; les bibliothèques JavaScript sont actuellement téléchargées auprès de CDN publics. **Pour un fonctionnement entièrement autonome ou sous contrôle informatique de l'établissement, héberger localement ces bibliothèques et ajouter une politique CSP stricte.**
+- Les bibliothèques utilisées sont PDF.js (extraction texte), pdf-lib (copie de pages), JSZip (archivage).
+- L'application **ne comporte actuellement aucun envoi interne**. Un serveur interne d'envoi nécessitera une API séparée, authentification, restrictions réseau, contrôles d'accès, et validation explicite des documents destinataires. Ne pas exposer cette API à Internet.
+- Aucun PDF réel, élève ou représentant ne doit être enregistré dans le dépôt public.
 
-## Installation sous Windows
+## Utilisation
 
-Nécessite Python 3.13.
+1. Importer un ou plusieurs PDF multi-notifications.
+2. Cliquer **Analyser les PDF** ; les notifications sont supposées compter exactement **deux pages**, texte présent dans la couche PDF.
+3. Contrôler et corriger dans le tableau les noms, prénoms, classe et décision (acceptation/refus).
+4. Désélectionner les lignes non désirées.
+5. Cliquer **Télécharger le ZIP**.
 
-```powershell
-py -3.13 -m venv .venv
-.venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
-python src/gui.py
+La détection automatisée dépend des libellés imprimés, de l'ordre et de la typographie du PDF. **Vérification humaine obligatoire**, notamment avant tout envoi ; les documents scannés sans couche texte ne sont pas reconnus. Les décisions non reconnues restent « À vérifier » et ne sont pas exportées tant qu'elles ne sont pas corrigées.
+
+## Lancer en local
+
+Un navigateur récent est requis. Certaines fonctions nécessitent une origine HTTP(S) : servir le répertoire statique avec :
+
+```sh
+python -m http.server 8000
 ```
 
-Exécution sans interface :
+Puis ouvrir `http://localhost:8000`. Le serveur local ne traite pas les PDF ; ils sont exploités par le navigateur.
 
-```powershell
-python src/bourses.py "C:\Dossier\Bourses"
-python src/bourses.py "C:\Dossier\Bourses" --sortie "D:\Exports\Bourses"
-```
+## GitHub Pages
 
-## Générer le .exe Windows
+Le workflow `.github/workflows/pages.yml` est conçu pour déployer uniquement `index.html` sur GitHub Pages. Il faut éventuellement activer **Settings → Pages → Source : GitHub Actions** dans les paramètres du dépôt. L'adresse de publication est `https://stephjoncheray.github.io/Split-And-Rename-B/`. Sa disponibilité doit être confirmée après le déploiement.
 
-```powershell
-python -m pip install -r requirements-dev.txt
-python -m PyInstaller --noconfirm --onefile --windowed --name Split_And_Rename_Bourses --paths src src/gui.py
-```
+## Historique
 
-Le programme compilé se trouve dans `dist/`. La compilation doit être réalisée et testée sur Windows ; aucune version exécutable n'est encore publiée ici.
+Le moteur `src/bourses.py`, son interface Tkinter et les fichiers Python sont conservés provisoirement **à titre de version historique**. Pour l'application web, c'est `index.html` qui fait foi ; Python n'est pas nécessaire.
 
-## Tests
+## Limites connues
 
-```powershell
-python -m pip install -r requirements-dev.txt
-python -m pytest -q
-```
-
-## Limites et confidentialité
-
-- **Attention :** le dépôt est actuellement **public**. Ne jamais y déposer de PDF administratifs réels ni de données personnelles ; `.gitignore` exclut les `*.pdf`.
-- Le programme suppose que chaque notification comporte exactement deux pages et ne reconnaît que les mises en page prises en charge par ses règles d'extraction. Vérifier les résultats avec des documents synthétiques avant un usage opérationnel.
-- Un PDF scanné sans couche texte n'est pas traité correctement : aucun OCR n'est intégré.
-- Si le PDF comporte un nombre impair de pages, la dernière est ignorée et signalée.
-- Aucun texte n'est anonymisé dans les PDF générés : ils restent confidentiels.
-
-## Licence
-
-Pas de licence définie pour l'instant. Vérifier les droits nécessaires avant réutilisation ou redistribution.
+- Pas d'OCR.
+- Découpage fixe par deux pages.
+- Pas de détection fiable garantie pour toutes les éditions de notifications.
+- Les dépendances JS sont actuellement chargées sur CDN ; l'usage strictement intranet demandera un hébergement local.
+- Aucun connecteur de messagerie n'est actif.
