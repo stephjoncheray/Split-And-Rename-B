@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+build/
+dist/
+*.spec
+*.log
+*.debug.txt
+export/
+Acceptation/
+Refus/
+*.pdf
+.DS_Store
