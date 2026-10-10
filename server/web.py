@@ -19,7 +19,7 @@ from urllib.parse import urlparse
 from bourses_sender import load_campaign, create_mail, check_email
 
 HOST, PORT = "127.0.0.1", 8766
-MAX_UPLOAD = 100 * 1024 * 1024
+MAX_UPLOAD = 300 * 1024 * 1024
 MAX_PILOT = 10
 LOCK = threading.Lock()
 APP = r"""<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bourses — Envoi interne</title><style>
@@ -33,7 +33,7 @@ APP = r"""<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name=
 const $=x=>document.getElementById(x);let raw=null,manifest=null,summary=null,csv=null;
 const data=()=>({zip:raw,filename:$('zip').files[0]?.name||'',sender:$('sender').value.trim(),password:$('password').value,copy_sent:$('sent').checked,subject_override:$('subject').value,body_override:$('body').value,delay:Number($('delay').value),confirm:$('confirm').value});
 async function invoke(action,body){const res=await fetch('./api/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});const text=await res.text();let out;try{out=JSON.parse(text)}catch(e){throw Error('Réponse non JSON (HTTP '+res.status+', '+(res.headers.get('content-type')||'type inconnu')+'). Vérifiez le reverse proxy et journalctl -u split-bourses-web. Début : '+text.slice(0,160).replace(/<[^>]*>/g,' ').trim())}if(!res.ok)throw Error('HTTP '+res.status+' : '+(out.error||'Erreur serveur'));return out}
-$('analyze').onclick=async()=>{try{const f=$('zip').files[0];if(!f)throw Error('Sélectionnez une archive ZIP.');if(f.size>100*1024*1024)throw Error('ZIP trop volumineux.');raw=await new Promise((resolve,reject)=>{const reader=new FileReader;reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(Error('Lecture impossible'));reader.readAsDataURL(f)});const v=await invoke('analyze',{zip:raw});manifest=v;summary=v;$('rows').replaceChildren();for(const m of v.messages){const tr=$('rows').insertRow();for(const value of [m.eleve,m.parent,m.decision,m.to,m.attachment])tr.insertCell().textContent=value}$('summary').textContent=v.messages.length+' message(s) valides · Contrôlez les destinataires et les pièces jointes avant envoi.';$('simulate').disabled=false;$('send').disabled=false;$('journal').disabled=true;csv=null}catch(e){$('summary').textContent=e.message;$('simulate').disabled=true;$('send').disabled=true}};
+$('analyze').onclick=async()=>{try{const f=$('zip').files[0];if(!f)throw Error('Sélectionnez une archive ZIP.');if(f.size>300*1024*1024)throw Error('ZIP trop volumineux (limite 300 Mo).');raw=await new Promise((resolve,reject)=>{const reader=new FileReader;reader.onload=()=>resolve(reader.result.split(',')[1]);reader.onerror=()=>reject(Error('Lecture impossible'));reader.readAsDataURL(f)});const v=await invoke('analyze',{zip:raw});manifest=v;summary=v;$('rows').replaceChildren();for(const m of v.messages){const tr=$('rows').insertRow();for(const value of [m.eleve,m.parent,m.decision,m.to,m.attachment])tr.insertCell().textContent=value}$('summary').textContent=v.messages.length+' message(s) valides · Contrôlez les destinataires et les pièces jointes avant envoi.';$('simulate').disabled=false;$('send').disabled=false;$('journal').disabled=true;csv=null}catch(e){$('summary').textContent=e.message;$('simulate').disabled=true;$('send').disabled=true}};
 $('zip').onchange=()=>{raw=null;manifest=null;$('rows').replaceChildren();$('simulate').disabled=true;$('send').disabled=true;$('summary').textContent='Analyse nécessaire pour ce nouveau fichier.'};
 $('preview').onclick=()=>{if(!manifest?.messages?.length){$('previewText').textContent='Importez d’abord un ZIP.';return}const m=manifest.messages[0];const vars={eleve:m.eleve,parent:m.parent,classe:m.classe,decision:m.decision.toLowerCase()};const sub=( $('subject').value||m.subject).replace(/\{(eleve|parent|classe|decision)\}/gi,(_,k)=>vars[k.toLowerCase()]);const body=($('body').value||m.body).replace(/\{(eleve|parent|classe|decision)\}/gi,(_,k)=>vars[k.toLowerCase()]);$('previewText').textContent='À : '+m.to+'\nObjet : '+sub+'\n\n'+body};
 async function run(action){try{if(!raw||!manifest)throw Error('Analyse préalable obligatoire.');if(action==='send'&&!confirm('Envoyer réellement les notifications aux destinataires affichés ?'))return;$('status').textContent='Traitement en cours…';$('simulate').disabled=true;$('send').disabled=true;const out=await invoke(action,data());$('status').textContent=out.summary;csv=out.csv;$('journal').disabled=false}catch(e){$('status').textContent='Erreur : '+e.message}finally{$('simulate').disabled=false;$('send').disabled=false;$('password').value=''}}
@@ -43,7 +43,7 @@ $('journal').onclick=()=>{if(!csv)return;const url=URL.createObjectURL(new Blob(
 
 def unpack(payload):
     value = payload.get("zip")
-    if not isinstance(value, str) or len(value) > MAX_UPLOAD * 1.5:
+    if not isinstance(value, str) or len(value) > int(MAX_UPLOAD*4/3)+16:
         raise ValueError("ZIP absent ou trop volumineux")
     try:
         raw = base64.b64decode(value, validate=True)
@@ -186,7 +186,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.output(415,{"error":"JSON requis"})
         try:
             size=int(self.headers.get("Content-Length","0"))
-            if size<=0 or size>MAX_UPLOAD*1.5:raise ValueError("Taille invalide")
+            if size<=0 or size>int(MAX_UPLOAD*4/3)+1024*1024:raise ValueError("Taille invalide : corps JSON supérieur à 401 Mo")
             opts=json.loads(self.rfile.read(size))
             raw=unpack(opts)
             if endpoint=="/api/analyze":
