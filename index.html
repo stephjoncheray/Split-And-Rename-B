@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notifications de bourses · PDF local</title>
+<style>
+:root{font-family:Inter,system-ui,Segoe UI,sans-serif;color:#e5edf8;background:#0c1422}*{box-sizing:border-box}
+body{margin:0}header,main,footer{max-width:1120px;margin:auto;padding:22px}header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+h1{font-size:clamp(1.4rem,3vw,2.3rem);margin:6px 0}h2{margin:0 0 12px;font-size:1.2rem}p{color:#a6b4c9;line-height:1.55}
+.tag{color:#65d9c3;font-weight:700;letter-spacing:.09em;text-transform:uppercase;font-size:.78rem}
+section{background:#162237;border:1px solid #30415d;border-radius:16px;padding:22px;margin-bottom:18px}
+.drop{border:2px dashed #607b9e;border-radius:12px;padding:28px;text-align:center;cursor:pointer;background:#192b44}
+.drop.over{border-color:#65d9c3}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+button,.button{border:0;border-radius:9px;padding:11px 17px;background:#4a87f4;color:white;font-weight:650;cursor:pointer;font:inherit}
+button.secondary{background:#30435e}button:disabled{opacity:.48;cursor:not-allowed}
+input[type=file]{display:none}input[type=text]{background:#0c1422;border:1px solid #536781;border-radius:6px;padding:7px;color:#fff;width:100%;font:inherit}
+table{border-collapse:collapse;width:100%;min-width:890px}th,td{text-align:left;padding:9px;border-bottom:1px solid #30415d;vertical-align:middle;font-size:.88rem}
+th{color:#a6b4c9}td input{min-width:85px}select{background:#0c1422;color:white;border:1px solid #536781;border-radius:7px;padding:8px}
+.scroll{overflow:auto}small{color:#a6b4c9}strong{color:white}.bad{color:#ffbb86}
+#status{white-space:pre-wrap}footer{font-size:.86rem;color:#a6b4c9}a{color:#90bbff}
+</style></head><body>
+<header><div><div class="tag">Traitement privé · 100 % navigateur</div><h1>Split & Rename — Bourses</h1><p>Séparer, identifier et renommer les notifications de bourses, sans téléverser les PDF.</p></div><div>📄</div></header>
+<main>
+<section><h2>1. Importer les notifications</h2>
+<div id="drop" class="drop" tabindex="0" role="button" aria-label="Sélectionner des PDF">
+<strong>Déposer les PDF ici ou cliquer pour sélectionner</strong><p>Fichiers PDF avec 2 pages par notification · plusieurs fichiers acceptés</p></div>
+<input id="files" type="file" accept=".pdf,application/pdf" multiple>
+<div class="actions"><button id="analyze">Analyser les PDF</button><button class="secondary" id="clear">Tout effacer</button></div>
+<p id="chosen" aria-live="polite">Aucun fichier sélectionné.</p><small>Les fichiers restent sur ce poste. Aucun serveur d'envoi n'est contacté.</small></section>
+<section><h2>2. Vérifier et corriger les résultats</h2><p>Les valeurs extraites automatiquement sont modifiables. Vérifiez-les avant de produire les documents.</p>
+<div class="scroll"><table><thead><tr><th>Source / pages</th><th>Représentant (nom)</th><th>Prénom</th><th>Élève (nom)</th><th>Prénom</th><th>Classe</th><th>Décision</th><th>Inclure</th></tr></thead><tbody id="results"><tr><td colspan="8">Aucune analyse effectuée.</td></tr></tbody></table></div>
+<div class="actions"><button id="download" disabled>Télécharger le ZIP</button></div><p id="status" role="status"></p>
+</section>
+<section><h2>3. Envoi interne (à raccorder)</h2>
+<p>Une passerelle d'envoi pourra être déployée sur le réseau de l'établissement. Cette version ne comporte <strong>aucune connexion ni envoi automatique</strong> : les documents sont uniquement téléchargés localement.</p>
+</section></main>
+<footer>Projet open source · traitement local via PDF.js, pdf-lib et JSZip · Ne pas importer de données réelles sur un poste non maîtrisé.</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
+<script type="module">
+import * as pdfjs from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
+import { PDFDocument } from 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm';
+import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
+pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+const $=id=>document.getElementById(id),rows=[],sources=new Map();
+let selected=[];
+const status=t=>$('status').textContent=t;
+function clean(v){return (v||'INCONNU').normalize('NFKC').replace(/[<>:"/\\|?*\x00-\x1f]/g,'').trim().replace(/\s+/g,'_').replace(/\.+$/,'').slice(0,90)||'INCONNU'}
+function nameParts(value){
+ const words=value.trim().split(/\s+/).filter(Boolean);if(words.length<2)return ['', ''];
+ let at=words.findIndex((w,i)=>i>0&&w===w.toUpperCase()&&/[A-ZÀ-Ÿ]/.test(w));if(at<0)at=1;
+ return [words.slice(at).join(' ').toUpperCase(),words.slice(0,at).join(' ')];
+}
+function extract(text){
+ const t=text.normalize('NFKC').replace(/\u00a0/g,' ');
+ const student=t.match(/([^\n()]+?)\s*\(\s*([0-9A-Z]{2,12})\s*-\s*n[°º]\s*élève/i);
+ const rep=t.match(/(?:^|\n)\s*(?:M\.|Mme|MME|Monsieur|Madame)\s+([^\n,]+)/i);
+ const dec=/décision de refus de bourse de lycée/i.test(t)?'Refus':/décision d[’']attribution de bourse de lycée/i.test(t)?'Acceptation':'À vérifier';
+ const s=student?nameParts(student[1]):['',''],r=rep?nameParts(rep[1]):['',''];
+ return {repNom:r[0],repPrenom:r[1],elNom:s[0],elPrenom:s[1],classe:student?.[2]||'',decision:dec,include:true};
+}
+async function pageText(page){const content=await page.getTextContent();let s='',lastY=null;for(const item of content.items){if(!('str'in item))continue;const y=item.transform?.[5];if(lastY!==null&&y!==undefined&&Math.abs(lastY-y)>4)s+='\n';s+=item.str+' ';lastY=y}return s}
+function setFiles(files){selected=[...files].filter(f=>/\.pdf$/i.test(f.name));$('chosen').textContent=selected.length+' PDF sélectionné(s) : '+selected.map(f=>f.name).join(', ')}
+$('files').addEventListener('change',e=>setFiles(e.target.files));
+$('drop').addEventListener('click',()=>$('files').click());
+$('drop').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();$('files').click()}});
+$('drop').addEventListener('dragover',e=>{e.preventDefault();$('drop').classList.add('over')});
+$('drop').addEventListener('dragleave',()=>$('drop').classList.remove('over'));
+$('drop').addEventListener('drop',e=>{e.preventDefault();$('drop').classList.remove('over');setFiles(e.dataTransfer.files)});
+$('clear').onclick=()=>{selected=[];rows.length=0;sources.clear();$('files').value='';$('chosen').textContent='Aucun fichier sélectionné.';render();status('')};
+function render(){
+ const tbody=$('results');tbody.replaceChildren();
+ if(!rows.length){const tr=tbody.insertRow();const td=tr.insertCell();td.colSpan=8;td.textContent='Aucun résultat.';}
+ rows.forEach((row,i)=>{
+  const tr=tbody.insertRow();const td=tr.insertCell();td.textContent=row.source+' · '+(row.page+1)+'–'+(row.page+2);
+  for(const prop of ['repNom','repPrenom','elNom','elPrenom','classe']){
+   const c=tr.insertCell(),inp=document.createElement('input');inp.type='text';inp.value=row[prop];inp.setAttribute('aria-label',prop+' bloc '+(i+1));inp.oninput=()=>row[prop]=inp.value;c.append(inp);
+  }
+  const c=tr.insertCell(),s=document.createElement('select');
+  for(const choice of ['Acceptation','Refus','À vérifier']){const option=document.createElement('option');option.value=choice;option.textContent=choice;s.append(option)}
+  s.value=row.decision;s.onchange=()=>row.decision=s.value;c.append(s);
+  const tick=document.createElement('input');tick.type='checkbox';tick.checked=row.include;tick.onchange=()=>row.include=tick.checked;tr.insertCell().append(tick);
+ });
+ $('download').disabled=!rows.length;
+}
+$('analyze').onclick=async()=>{
+ if(!selected.length){status('Sélectionnez au moins un PDF.');return}
+ rows.length=0;sources.clear();render();$('analyze').disabled=true;status('Analyse en cours…');
+ const failures=[];
+ try{
+  for(const [fi,file] of selected.entries()){
+   status('Analyse '+(fi+1)+'/'+selected.length+' : '+file.name);
+   try{
+    const bytes=new Uint8Array(await file.arrayBuffer());const pdf=await pdfjs.getDocument({data:bytes.slice()}).promise;
+    sources.set(fi,bytes);
+    for(let p=0;p+1<pdf.numPages;p+=2){
+     try{const page=await pdf.getPage(p+1),text=await pageText(page);rows.push({...extract(text),source:file.name,fileId:fi,page:p})}
+     catch(e){failures.push(file.name+' pages '+(p+1)+'–'+(p+2)+' : '+e.message)}
+    }
+    if(pdf.numPages%2)failures.push(file.name+' : dernière page isolée ignorée');
+    await pdf.destroy();
+   }catch(e){failures.push(file.name+' : '+e.message)}
+  }
+  render();status(rows.length+' notification(s) détectée(s). '+(failures.length?'\nAnomalies :\n'+failures.join('\n'):'Vérifiez les noms et décisions.'));
+ }finally{$('analyze').disabled=false}
+};
+$('download').onclick=async()=>{
+ $('download').disabled=true;
+ try{
+  const zip=new JSZip(),used=new Set(),cache=new Map();let done=0,skipped=0;
+  for(const row of rows){
+   if(!row.include)continue;
+   if(!['Acceptation','Refus'].includes(row.decision)||!row.repNom||!row.repPrenom||!row.elNom||!row.elPrenom||!row.classe){skipped++;continue}
+   if(!cache.has(row.fileId))cache.set(row.fileId,await PDFDocument.load(sources.get(row.fileId)));
+   const src=cache.get(row.fileId),out=await PDFDocument.create();
+   const pages=await out.copyPages(src,[row.page,row.page+1]);pages.forEach(p=>out.addPage(p));
+   const stem=[row.repNom,row.repPrenom,row.elNom,row.elPrenom,row.classe,'Notification_'+row.decision].map(clean).join('_');
+   let candidate=row.decision+'/'+stem+'.pdf',n=2;
+   while(used.has(candidate)){candidate=row.decision+'/'+stem+'-'+n+++'.pdf'}
+   used.add(candidate);zip.file(candidate,await out.save());done++;
+  }
+  if(!done){status('Aucun document complet sélectionné. Corrigez les lignes marquées « À vérifier ».');return}
+  const blob=await zip.generateAsync({type:'blob',compression:'DEFLATE'},meta=>status('Création ZIP : '+Math.round(meta.percent)+' %'));
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='notifications-bourses.zip';a.click();setTimeout(()=>URL.revokeObjectURL(url),60000);
+  status(done+' document(s) exporté(s). '+skipped+' ignoré(s). Aucune transmission réseau des fichiers.');
+ }catch(e){status('Erreur lors de la génération : '+e.message)}
+ finally{$('download').disabled=false}
+};
+</script></body></html>
