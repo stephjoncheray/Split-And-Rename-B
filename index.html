@@ -1,38 +1,22 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Notifications de bourses · PDF local</title>
-<style>
-:root{font-family:Inter,system-ui,Segoe UI,sans-serif;color:#e5edf8;background:#0c1422}*{box-sizing:border-box}
-body{margin:0}header,main,footer{max-width:1120px;margin:auto;padding:22px}header{display:flex;align-items:center;justify-content:space-between;gap:16px}
-h1{font-size:clamp(1.4rem,3vw,2.3rem);margin:6px 0}h2{margin:0 0 12px;font-size:1.2rem}p{color:#a6b4c9;line-height:1.55}
-.tag{color:#65d9c3;font-weight:700;letter-spacing:.09em;text-transform:uppercase;font-size:.78rem}
-section{background:#162237;border:1px solid #30415d;border-radius:16px;padding:22px;margin-bottom:18px}
-.drop{border:2px dashed #607b9e;border-radius:12px;padding:28px;text-align:center;cursor:pointer;background:#192b44}
-.drop.over{border-color:#65d9c3}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
-button,.button{border:0;border-radius:9px;padding:11px 17px;background:#4a87f4;color:white;font-weight:650;cursor:pointer;font:inherit}
-button.secondary{background:#30435e}button:disabled{opacity:.48;cursor:not-allowed}
-input[type=file]{display:none}input[type=text]{background:#0c1422;border:1px solid #536781;border-radius:6px;padding:7px;color:#fff;width:100%;font:inherit}
-table{border-collapse:collapse;width:100%;min-width:890px}th,td{text-align:left;padding:9px;border-bottom:1px solid #30415d;vertical-align:middle;font-size:.88rem}
-th{color:#a6b4c9}td input{min-width:85px}select{background:#0c1422;color:white;border:1px solid #536781;border-radius:7px;padding:8px}
-.scroll{overflow:auto}small{color:#a6b4c9}strong{color:white}.bad{color:#ffbb86}
-#status{white-space:pre-wrap}footer{font-size:.86rem;color:#a6b4c9}a{color:#90bbff}
-</style></head><body>
-<header><div><div class="tag">Traitement privé · 100 % navigateur</div><h1>Split & Rename — Bourses</h1><p>Séparer, identifier et renommer les notifications de bourses, sans téléverser les PDF.</p></div><div>📄</div></header>
-<main>
-<section><h2>1. Importer les notifications</h2>
-<div id="drop" class="drop" tabindex="0" role="button" aria-label="Sélectionner des PDF">
+<style>:root{font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:#192b3c;background:#f3f6fa}*{box-sizing:border-box}body{margin:0}.app-layout{display:flex;min-height:100vh}.sidebar{width:240px;flex:0 0 240px;background:#142738;color:#e5f2fa;padding:27px 14px;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:7px}.brand{font-size:16px;font-weight:800;letter-spacing:.1em;padding:8px 11px 28px}.navlink{text-align:left;background:transparent;color:#c8d6e1;padding:15px 13px;border:0;border-radius:10px;cursor:pointer;font-weight:650;font-size:14px;text-decoration:none}.navlink:hover{background:#26435b;color:white}.navlink.active{background:#246b94;color:white;box-shadow:inset 3px 0 #82d0ff}.navfoot{margin-top:auto;font-size:11px;color:#a4bacb;padding:12px;line-height:1.6}.wrap{flex:1;min-width:0;padding:29px clamp(18px,3vw,48px)}header{margin:0 0 24px;display:block;padding:0;max-width:none}.eyebrow{color:#397194;text-transform:uppercase;letter-spacing:.12em;font-size:12px;font-weight:800}h1{font-size:clamp(29px,4vw,40px);margin:8px 0}h1 span{color:#20688e}h2{font-size:20px;margin:0 0 16px}p{color:#526476;line-height:1.6}.panel{background:white;border:1px solid #dce5ec;border-radius:16px;padding:25px;margin-bottom:20px;box-shadow:0 10px 28px #192b3c08}section[hidden]{display:none!important}.drop{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;background:#f7fafc;border:2px dashed #a7bdcc;border-radius:14px;min-height:220px;padding:25px;text-align:center;cursor:pointer}.drop.over{border-color:#17698f;background:#eaf5fa}.dropicon{font-size:42px;color:#24749c}button{border:0;border-radius:9px;font-weight:700;padding:12px 19px;cursor:pointer;font-size:14px;background:#145e83;color:white}button.secondary{background:#e3f1f8;color:#145e83}button:disabled{opacity:.45;cursor:not-allowed}input[type=file]{display:none}.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:18px}.scroll{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px;min-width:960px}th{text-align:left;color:#516578;background:#f4f7fa;white-space:nowrap}th,td{padding:10px 8px;border-bottom:1px solid #e6edf2;vertical-align:middle}th.sortable{cursor:pointer;user-select:none}th.sortable:hover{color:#0c7295}td input[type=text],td select,.filters select,.filters input{width:100%;min-width:90px;padding:9px;border:1px solid #cad8e1;border-radius:6px;background:white;color:#192b3c;font:inherit}td input[type=checkbox]{width:19px;height:19px;accent-color:#14658c}tr.issue{background:#fffcf5}.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:12px 0 20px}.filters label{display:flex;align-items:center;gap:7px;font-size:13px}.filters input[type=search]{width:260px;padding:10px;border:1px solid #cad8e1;border-radius:8px}.filters select{width:auto}.count{font-weight:700;color:#255d79}.note{font-size:13px;color:#64748b}#status{white-space:pre-wrap;font-size:14px;color:#285774}footer{font-size:12px;color:#6b8090;padding:10px;text-align:center}a{color:#20688e}.navlink.external{display:block;color:#d5e7f3;font-size:12px;line-height:1.5}.muted{font-size:13px;color:#607486}@media(max-width:900px){.app-layout{display:block}.sidebar{width:100%;height:auto;position:static;flex-direction:row;flex-wrap:wrap;padding:10px}.brand{padding:12px}.navlink{padding:10px;font-size:12px}.navfoot{display:none}.wrap{padding:16px}.panel{padding:17px}}</style></head><body>
+<div class="app-layout"><aside class="sidebar"><div class="brand">BOURSES</div><button class="navlink active" data-nav="import">01 · Documents PDF</button><button class="navlink" data-nav="results">02 · Trier et contrôler</button><button class="navlink" data-nav="help">ⓘ · Informations</button><a class="navlink external" href="http://192.168.224.240/split-eval/" target="_blank" rel="noopener noreferrer">✉ · Serveur d’envoi interne <small style="display:block;opacity:.8">Lien de référence Split-Eval · Aucun envoi activé pour les bourses</small></a><div class="navfoot">Application locale · Aucune transmission des PDF</div></aside><div class="wrap"><header><div class="eyebrow">Outil de traitement local · Notifications de bourses</div><h1>Gestion des <span>bourses</span></h1><p>Importer, trier, corriger et exporter les notifications — une étape à la fois.</p></header>
+<section class="panel" data-step="import"><h2>1. Importer les notifications</h2>
+<div id="drop" class="drop" tabindex="0" role="button" aria-label="Sélectionner des PDF"><div class="dropicon">⇪</div>
 <strong>Déposer les PDF ici ou cliquer pour sélectionner</strong><p>Fichiers PDF avec 2 pages par notification · plusieurs fichiers acceptés</p></div>
 <input id="files" type="file" accept=".pdf,application/pdf" multiple>
 <div class="actions"><button id="analyze">Analyser les PDF</button><button class="secondary" id="clear">Tout effacer</button></div>
 <p id="chosen" aria-live="polite">Aucun fichier sélectionné.</p><small>Les fichiers restent sur ce poste. Aucun serveur d'envoi n'est contacté.</small></section>
-<section><h2>2. Vérifier et corriger les résultats</h2><p>Les valeurs extraites automatiquement sont modifiables. Vérifiez-les avant de produire les documents.</p>
-<div class="scroll"><table><thead><tr><th>Source / pages</th><th>Représentant (nom)</th><th>Prénom</th><th>Élève (nom)</th><th>Prénom</th><th>Classe</th><th>Décision</th><th>Inclure</th></tr></thead><tbody id="results"><tr><td colspan="8">Aucune analyse effectuée.</td></tr></tbody></table></div>
+<section class="panel" data-step="results" hidden><h2>2. Vérifier et corriger les résultats</h2><p>Les valeurs extraites automatiquement sont modifiables. Vérifiez-les avant de produire les documents.</p>
+<div class="filters"><label>Recherche <input id="search" type="search" placeholder="Élève, classe, responsable, fichier…"></label><label>Décision <select id="filterDecision"><option value="all">Toutes</option><option value="Acceptation">Acceptation</option><option value="Refus">Refus</option><option value="À vérifier">À vérifier</option></select></label><label><input id="onlySelected" type="checkbox"> Sélectionnées uniquement</label><span class="count" id="count"></span></div><div class="actions"><button class="secondary" id="checkAll">Tout cocher</button><button class="secondary" id="uncheckAll">Tout décocher</button></div><div class="scroll"><table><thead><tr><th class="sortable" data-key="source">Source / pages ↕</th><th class="sortable" data-key="repNom">Responsable ↕</th><th class="sortable" data-key="repPrenom">Prénom ↕</th><th class="sortable" data-key="elNom">Élève ↕</th><th class="sortable" data-key="elPrenom">Prénom ↕</th><th class="sortable" data-key="classe">Classe ↕</th><th class="sortable" data-key="decision">Décision ↕</th><th class="sortable" data-key="include">Inclure ↕</th></tr></thead><tbody id="results"><tr><td colspan="8">Aucune analyse effectuée.</td></tr></tbody></table></div>
 <div class="actions"><button id="download" disabled>Télécharger le ZIP</button></div><p id="status" role="status"></p>
 </section>
-<section><h2>3. Envoi interne (à raccorder)</h2>
+<section class="panel" data-step="help" hidden><h2>Envoi interne (à raccorder)</h2>
 <p>Une passerelle d'envoi pourra être déployée sur le réseau de l'établissement. Cette version ne comporte <strong>aucune connexion ni envoi automatique</strong> : les documents sont uniquement téléchargés localement.</p>
-</section></main>
-<footer>Projet open source · traitement local via PDF.js, pdf-lib et JSZip · Ne pas importer de données réelles sur un poste non maîtrisé.</footer>
+</section>
+<footer>Projet open source · traitement local via PDF.js, pdf-lib et JSZip · Ne pas importer de données réelles sur un poste non maîtrisé.</footer></div></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
 <script type="module">
 import * as pdfjs from 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
@@ -40,7 +24,7 @@ import { PDFDocument } from 'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/+esm';
 import JSZip from 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm';
 pdfjs.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
 const $=id=>document.getElementById(id),rows=[],sources=new Map();
-let selected=[];
+let selected=[];let sortKey='classe',sortDirection=1;let activeStep='import';function navigate(step){activeStep=step;document.querySelectorAll('[data-step]').forEach(el=>el.hidden=el.dataset.step!==step);document.querySelectorAll('[data-nav]').forEach(el=>el.classList.toggle('active',el.dataset.nav===step));}document.querySelectorAll('[data-nav]').forEach(btn=>btn.onclick=()=>navigate(btn.dataset.nav));
 const status=t=>$('status').textContent=t;
 function clean(v){return (v||'INCONNU').normalize('NFKC').replace(/[<>:"/\\|?*\x00-\x1f]/g,'').trim().replace(/\s+/g,'_').replace(/\.+$/,'').slice(0,90)||'INCONNU'}
 function nameParts(value){
@@ -68,15 +52,15 @@ $('clear').onclick=()=>{selected=[];rows.length=0;sources.clear();$('files').val
 function render(){
  const tbody=$('results');tbody.replaceChildren();
  if(!rows.length){const tr=tbody.insertRow();const td=tr.insertCell();td.colSpan=8;td.textContent='Aucun résultat.';}
- rows.forEach((row,i)=>{
+ const search=($('search').value||'').toLocaleLowerCase('fr');const decision=$('filterDecision').value;const selectedOnly=$('onlySelected').checked;const filtered=rows.filter(row=>(decision==='all'||row.decision===decision)&&(!selectedOnly||row.include)&&(!search||[row.source,row.repNom,row.repPrenom,row.elNom,row.elPrenom,row.classe,row.decision].join(' ').toLocaleLowerCase('fr').includes(search))).sort((a,b)=>{const av=sortKey==='include'?Number(a.include):String(a[sortKey]??'');const bv=sortKey==='include'?Number(b.include):String(b[sortKey]??'');return typeof av==='number'?sortDirection*(av-bv):sortDirection*av.localeCompare(bv,'fr',{numeric:true,sensitivity:'base'})});$('count').textContent=filtered.length+' / '+rows.length+' notifications';filtered.forEach((row,i)=>{
   const tr=tbody.insertRow();const td=tr.insertCell();td.textContent=row.source+' · '+(row.page+1)+'–'+(row.page+2);
   for(const prop of ['repNom','repPrenom','elNom','elPrenom','classe']){
-   const c=tr.insertCell(),inp=document.createElement('input');inp.type='text';inp.value=row[prop];inp.setAttribute('aria-label',prop+' bloc '+(i+1));inp.oninput=()=>row[prop]=inp.value;c.append(inp);
+   const c=tr.insertCell(),inp=document.createElement('input');inp.type='text';inp.value=row[prop];inp.setAttribute('aria-label',prop+' bloc '+(i+1));inp.oninput=()=>{row[prop]=inp.value};c.append(inp);
   }
   const c=tr.insertCell(),s=document.createElement('select');
   for(const choice of ['Acceptation','Refus','À vérifier']){const option=document.createElement('option');option.value=choice;option.textContent=choice;s.append(option)}
-  s.value=row.decision;s.onchange=()=>row.decision=s.value;c.append(s);
-  const tick=document.createElement('input');tick.type='checkbox';tick.checked=row.include;tick.onchange=()=>row.include=tick.checked;tr.insertCell().append(tick);
+  s.value=row.decision;s.onchange=()=>{row.decision=s.value;render()};c.append(s);
+  const tick=document.createElement('input');tick.type='checkbox';tick.checked=row.include;tick.onchange=()=>{row.include=tick.checked;if($('onlySelected').checked)render()};tr.insertCell().append(tick);
  });
  $('download').disabled=!rows.length;
 }
@@ -98,10 +82,10 @@ $('analyze').onclick=async()=>{
     await pdf.destroy();
    }catch(e){failures.push(file.name+' : '+e.message)}
   }
-  render();status(rows.length+' notification(s) détectée(s). '+(failures.length?'\nAnomalies :\n'+failures.join('\n'):'Vérifiez les noms et décisions.'));
+  render();navigate('results');status(rows.length+' notification(s) détectée(s). '+(failures.length?'\nAnomalies :\n'+failures.join('\n'):'Vérifiez les noms et décisions.'));
  }finally{$('analyze').disabled=false}
 };
-$('download').onclick=async()=>{
+for(const id of ['search','filterDecision','onlySelected'])$(id).addEventListener(id==='search'?'input':'change',render);document.querySelectorAll('th[data-key]').forEach(th=>th.onclick=()=>{const key=th.dataset.key;if(sortKey===key)sortDirection*=-1;else {sortKey=key;sortDirection=1}render();document.querySelectorAll('th[data-key]').forEach(t=>t.textContent=t.textContent.replace(/[ ↑↓]$/,''));th.textContent=th.textContent.replace('↕',sortDirection>0?'↑':'↓')});$('checkAll').onclick=()=>{rows.forEach(r=>r.include=true);render()};$('uncheckAll').onclick=()=>{rows.forEach(r=>r.include=false);render()};$('download').onclick=async()=>{
  $('download').disabled=true;
  try{
   const zip=new JSZip(),used=new Set(),cache=new Map();let done=0,skipped=0;
