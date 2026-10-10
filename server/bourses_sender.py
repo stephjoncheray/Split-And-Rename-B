@@ -11,6 +11,7 @@ import hashlib
 import imaplib
 import json
 import os
+import stat
 import re
 import smtplib
 import ssl
@@ -119,6 +120,8 @@ def run(args):
     if args.send and not args.state:
         raise ValueError("Envoi réel : --state /chemin/prive/etat.jsonl requis pour tracer la reprise")
     state = Path(args.state).resolve() if args.state else None
+    if state and state.exists() and (stat.S_IMODE(state.stat().st_mode) & 0o077):
+        raise ValueError("Le fichier d’état doit être inaccessible aux autres utilisateurs (chmod 600)")
     delivered = set()
     if state and state.exists():
         with state.open(encoding="utf-8") as fp:
@@ -160,7 +163,7 @@ def run(args):
                         # que le message a été accepté malgré l'absence de confirmation locale.
                         # La reprise automatique DOIT ignorer cet index.
                         result["smtp"] = "INCERTAIN_APRES_APPEL_SMTP"
-                        with state.open("a", encoding="utf-8") as sf:
+                        with os.fdopen(os.open(state, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600), "a", encoding="utf-8") as sf:
                             sf.write(json.dumps({"digest": digest, "index": index,
                                                  "smtp": result["smtp"]}) + "\n")
                             sf.flush()
