@@ -58,3 +58,13 @@ L'application cherche une correspondance **exacte normalisée** sur le nom et pr
 Dans **04 · Préparer les envois**, contrôler les destinataires, sélectionner les lignes prêtes et ajuster l'objet et le corps avec `{parent}`, `{eleve}`, `{classe}`, `{decision}`. L'export ZIP contient `campagne.json` et les fichiers dans `pieces_jointes/`. Le manifeste utilise le statut `PREPARE_NON_ENVOYE` : **aucun courriel n'est envoyé par cette page**.
 
 Le serveur d'envoi interne de Split-Eval n'est pas automatiquement compatible avec ce schéma. Un **adaptateur spécifique et des contrôles côté serveur** seront nécessaires avant de pouvoir utiliser ce ZIP pour une campagne réelle. Le serveur doit notamment rejeter les chemins de pièces jointes dangereux, vérifier les adresses et exiger une validation explicite de l'opérateur. Les dépendances JavaScript actuellement chargées par CDN sont à héberger localement pour un usage maîtrisé en établissement.
+
+## Export Thunderbird
+
+Dans **04 · Préparer les envois**, cliquer sur **Exporter les brouillons Thunderbird (.eml)**. Le ZIP contient un brouillon `.eml` MIME par notification sélectionnée et validée, avec adresse du parent désigné, objet, texte personnalisé et notification PDF en pièce jointe. Le champ `X-Unsent: 1` signale le mode brouillon ; Thunderbird peut néanmoins ouvrir le fichier en lecture selon sa version. Dans ce cas, utiliser **Modifier comme nouveau message**. Aucun courriel n'est envoyé automatiquement.
+
+## Adresse du service interne
+
+Le service d'envoi de bourses est prévu à **http://192.168.224.240/Split-And-Rename-B/** (adresse réseau locale). L'interface GitHub Pages ne transmet pas les documents à cette URL. Le déploiement de l'application côté serveur et la validation de la passerelle d'envoi restent distincts.
+
+La page **Informations** détaille désormais le traitement local, les fichiers téléchargés, les rapprochements PRONOTE, les limites techniques et les responsabilités de vérification avant envoi.
