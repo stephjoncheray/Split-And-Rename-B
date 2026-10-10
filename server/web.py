@@ -123,7 +123,7 @@ def action(raw, opts, send):
             for index,m in enumerate(manifest["messages"],1):
                 entry=dict(m);entry["subject"]=replacements(subject or m["subject"],m);entry["body"]=replacements(body or m["body"],m)
                 mail=create_mail(entry,z.read(m["attachment"]),sender)
-                line={"index":index,"eleve":str(m["eleve"]),"parent":str(m["responsable"]),"to":m["to"][0],"attachment":m["attachment"],"smtp":"SIMULATION","imap":"NON_TENTE","date_utc":datetime.now(timezone.utc).isoformat(),"message_id":str(mail["Message-ID"]),"detail":""}
+                line={"index":index,"eleve":(m["eleve"].get("prenom","")+" "+m["eleve"].get("nom","")).strip(),"parent":(m["responsable"].get("prenom","")+" "+m["responsable"].get("nom","")).strip(),"classe":m["eleve"].get("classe",""),"decision":m.get("decision",""),"to":m["to"][0],"attachment":m["attachment"],"smtp":"SIMULATION","imap":"NON_TENTE","date_utc":datetime.now(timezone.utc).isoformat(),"message_id":str(mail["Message-ID"]),"detail":""}
                 if send:
                     # Toute erreur de connexion après une tentative d'envoi rend la reprise incertaine.
                     try:
@@ -147,7 +147,7 @@ def action(raw, opts, send):
             try:imap.logout()
             except Exception:pass
     report=io.StringIO();report.write("\ufeff")
-    fields=["index","date_utc","eleve","parent","to","attachment","message_id","smtp","imap","detail"]
+    fields=["index","date_utc","eleve","classe","parent","decision","to","attachment","message_id","smtp","imap","detail"]
     writer=csv.DictWriter(report,fieldnames=fields,delimiter=";");writer.writeheader();writer.writerows(result)
     return {"summary":f"{len(result)} message(s) traités · "+str(sum(r["smtp"]=="ACCEPTE_PAR_RELAIS" for r in result))+" accepté(s) SMTP · "+str(sum(r["imap"]=="COPIE_OK" for r in result))+" copié(s) IMAP.","csv":report.getvalue()}
 
